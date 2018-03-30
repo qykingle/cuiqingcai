@@ -4,6 +4,7 @@ import re
 import json
 from multiprocessing import Pool
 
+# 添加headers，以便能够访问网站
 MaoYanHeaders = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
         "Accept-Encoding": "gzip, deflate",
@@ -16,6 +17,7 @@ MaoYanHeaders = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"
     }
 
+# 请求页面
 def get_one_page(url):
     try:
         response = requests.get(url, headers=MaoYanHeaders)
@@ -25,6 +27,7 @@ def get_one_page(url):
     except RequestException:
         return None
 
+# 解析页面
 def parse_one_page(html):
     pattern = re.compile('<dd>.*?board-index.*?>(\d+)</i>.*?data-src="(.*?)".*?name"><a.*?>(.*?)</a>.*?star">(.*?)</p>'
             +'.*?releasetime">(.*?)</p>.*?integer">(.*?)</i>.*?fraction">(.*?)</i>.*?</dd>', re.S)
@@ -39,6 +42,7 @@ def parse_one_page(html):
                 'score': item[5] + item[6]
         }
 
+# 写入文件,使用utf-8格式，以便中文正常显示
 def write_to_file(content):
     with open('result.txt', 'a', encoding='utf-8') as f:
         f.write(json.dumps(content, ensure_ascii=False) + '\n')
@@ -53,5 +57,6 @@ def main(offset):
         write_to_file(item)
 
 if __name__ == '__main__':
+# 使用进程池,代码运行速度更快
     pool= Pool()
     pool.map(main, [i*10 for i in range(10)])
